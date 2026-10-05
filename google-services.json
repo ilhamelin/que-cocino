@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "832336359000",
+    "project_id": "que-cocino-6377a",
+    "storage_bucket": "que-cocino-6377a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:832336359000:android:138146823cf167d4cbe42d",
+        "android_client_info": {
+          "package_name": "com.quecocino.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "832336359000-c2f2rdetn58lsc9vjsd16521pn3h4rlr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.quecocino.app",
+            "certificate_hash": "3b10b5eab079df16b3fe7ddddce29820ef4f65f7"
+          }
+        },
+        {
+          "client_id": "832336359000-8jm6jham9v7pjmeqtre4hovbhevr74ul.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChKRRxx5ahPUNHMtPwEgwAv__3c2hszJE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "832336359000-8jm6jham9v7pjmeqtre4hovbhevr74ul.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+    function activeAccount(uid) {
+      return !exists(/databases/$(database)/documents/users/$(uid))
+        || get(/databases/$(database)/documents/users/$(uid)).data.deleted != true;
+    }
+    function validKitchen(data) {
+      let ingredientIds = ['huevos', 'arroz', 'tomate', 'espinaca', 'pasta', 'queso', 'papa', 'cebolla', 'lentejas', 'pan', 'palta', 'zanahoria'];
+      let recipeIds = ['arroz-tomate', 'pasta-tomate', 'tortilla-espinaca', 'ensalada-lentejas', 'papas-huevo', 'arroz-verduras', 'sandwich-queso', 'tostadas-palta'];
+      return data.keys().hasAll(['version', 'pantry', 'favorites', 'shopping', 'checked'])
+        && data.keys().hasOnly(['version', 'pantry', 'favorites', 'shopping', 'checked'])
+        && data.version == 1
+        && data.pantry is list && data.pantry.size() <= 12 && data.pantry.hasOnly(ingredientIds)
+        && data.favorites is list && data.favorites.size() <= 8 && data.favorites.hasOnly(recipeIds)
+        && data.shopping is list && data.shopping.size() <= 12 && data.shopping.hasOnly(ingredientIds)
+        && data.checked is list && data.checked.size() <= 12 && data.checked.hasOnly(data.shopping);
+    }
+    // Minimal irreversible deletion marker. It contains no name, email or kitchen.
+    match /users/{uid} {
+      allow get: if owner(uid);
+      allow create, update: if owner(uid)
+        && request.resource.data.keys().hasOnly(['deleted'])
+        && request.resource.data.deleted == true;
+      allow list, delete: if false;
+      match /kitchens/{document} {
+        allow get: if document == 'current' && owner(uid) && activeAccount(uid);
+        allow create, update: if document == 'current' && owner(uid) && activeAccount(uid) && validKitchen(request.resource.data);
+        allow delete: if document == 'current' && owner(uid);
+        allow list: if false;
+      }
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

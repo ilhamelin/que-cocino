@@ -1,3 +1,4 @@
+import { normalizeName } from './planning';
 import { decodeState, initialState, type KitchenState } from './kitchen';
 
 export type Workspace = {
@@ -25,14 +26,22 @@ export function decodeWorkspace(raw: string): Workspace {
     sync: { enabled: value.sync.enabled, dirty: value.sync.dirty, remoteUpdateTime: value.sync.remoteUpdateTime, lastSyncedAt: value.sync.lastSyncedAt } };
 }
 export function hasKitchenData(state: KitchenState): boolean {
-  return state.pantry.length + state.favorites.length + state.shopping.length > 0;
+  return state.pantry.length + state.favorites.length + state.shopping.length + state.savedRecipes.length + state.customIngredients.length + state.mealPlan.length + state.cookHistory.length > 0;
 }
 export function sameKitchen(a: KitchenState, b: KitchenState): boolean {
-  return (['pantry', 'favorites', 'shopping', 'checked'] as const).every(key =>
+  return JSON.stringify([a.customIngredients, a.mealPlan, a.cookHistory]) === JSON.stringify([b.customIngredients, b.mealPlan, b.cookHistory]) && JSON.stringify(a.quantities) === JSON.stringify(b.quantities) && JSON.stringify(a.savedRecipes) === JSON.stringify(b.savedRecipes) && (['pantry', 'favorites', 'shopping', 'checked'] as const).every(key =>
     a[key].length === b[key].length && a[key].every(id => (b[key] as readonly string[]).includes(id)));
 }
 export function importKitchen(target: KitchenState, guest: KitchenState): KitchenState {
-  return decodeState(JSON.stringify({ version: 1,
+  return decodeState(JSON.stringify({ version: 3,
+    customIngredients: [...target.customIngredients.map(t => {
+      const g = guest.customIngredients.find(r => t.id === r.id || normalizeName(t.name) === normalizeName(r.name));
+      return g ? { ...t, pantry: t.pantry || g.pantry, shopping: t.shopping || g.shopping, checked: t.checked || g.checked, quantity: t.quantity ?? g.quantity } : t;
+    }), ...guest.customIngredients.filter(r => !target.customIngredients.some(t => t.id === r.id || normalizeName(t.name) === normalizeName(r.name)))],
+    mealPlan: [...target.mealPlan, ...guest.mealPlan.filter(r => !target.mealPlan.some(t => t.date === r.date))],
+    cookHistory: [...target.cookHistory, ...guest.cookHistory.filter(r => !target.cookHistory.some(t => t.id === r.id))],
+    quantities: { ...guest.quantities, ...target.quantities },
+    savedRecipes: [...target.savedRecipes, ...guest.savedRecipes.filter(r => !target.savedRecipes.some(t => t.id === r.id))],
     pantry: [...new Set([...target.pantry, ...guest.pantry])], favorites: [...new Set([...target.favorites, ...guest.favorites])],
     shopping: [...new Set([...target.shopping, ...guest.shopping])], checked: [...new Set([...target.checked, ...guest.checked])],
   }));

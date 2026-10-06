@@ -13,6 +13,7 @@ export default function SettingsScreen() {
     <SettingsRow icon="cloud-outline" title="Respaldo y sincronización" description="Copia de tu cocina en Firestore y cambios pendientes" onPress={() => router.push('/settings/backup')} />
     <SettingsRow icon="color-palette-outline" title="Apariencia y lectura" description="Tema, modo oscuro, tamaño y tipo de fuente" onPress={() => router.push('/settings/appearance')} />
     <SettingsRow icon="help-circle-outline" title="Ayuda" description="Respuestas sobre despensa, recetas y compras" onPress={() => router.push('/settings/help')} />
+    <SettingsRow icon="chatbubble-ellipses-outline" title="Asistente de cocina" description="Consultas de cocina y de la app con Gemini" onPress={() => router.push('/settings/chat')} />
     <SettingsRow icon="information-circle-outline" title="Información de la app" description="Versión y funciones disponibles" onPress={() => router.push('/settings/about')} />
     <Notice>{account ? 'Estás usando la cocina de tu cuenta. El respaldo en la nube es opcional.' : 'Estás usando la cocina del invitado. Puedes iniciar sesión desde Perfil.'}</Notice>
   </SettingsPage>;

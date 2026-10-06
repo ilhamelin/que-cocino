@@ -22,8 +22,13 @@ La persona creó la base `(default)` y confirmó la publicación de las reglas c
 
 ## Límites de esta entrega
 
-- Las pruebas de API usan respuestas controladas; no constituyen una prueba del servicio remoto ni del compilador de reglas. Base, reglas publicadas y recorrido con dos dispositivos siguen pendientes.
+- Las pruebas de API usan respuestas controladas; no constituyen una prueba del servicio remoto. La persona confirmó base y reglas publicadas; primera sincronización, controles de acceso y recorrido con dos dispositivos siguen pendientes.
 - El respaldo es una copia de recuperación actual, sin historial de versiones ni copias programadas/PITR. Resuelve conflictos mediante elección explícita; no realiza mezcla campo por campo.
 - La eliminación Auth + Firestore + SQLite no puede ser una única transacción. Si falla después de la marca remota, la cocina queda bloqueada y la identidad puede seguir existiendo: hay que reintentar la eliminación. El registro local permite retomar una limpieza confirmada; no deduce borrado de cuenta por un simple cierre de sesión. Si la app se cierra exactamente después del borrado de identidad y antes de registrar su confirmación local, la copia anterior se conserva inaccesible hasta resolver la limpieza; no se afirma que esa ventana sea atómica.
 - La cocina queda separada por cuenta dentro de la app, pero no se cifra frente a acceso físico al almacenamiento. Los ajustes y el apodo permanecen por dispositivo. La exportación Metro no valida teléfonos ni iOS nativo.
 - Firestore REST utiliza el token del usuario y aplica reglas: [documentación oficial](https://firebase.google.com/docs/firestore/use-rest-api). Nunca utiliza credenciales administrativas para saltarlas.
+
+
+Actualización del 5 de octubre: cantidades y recetas propias usan Kitchen v2, compatible con lectura v1. Reglas compiladas/publicadas; ver MEJORAS.md para migración, límites, TheMealDB, temporizador y comprobaciones. Las 31 pruebas app, 4 Worker y exportación all pasaron; las nuevas interacciones físicas siguen pendientes.
+
+Formato vigente v3: extras JSON incluye ingredientes personalizados, plan semanal e historial/notas, con límite de 120.000 caracteres. quantities y savedRecipes continúan como campos JSON validados por cliente; listas conocidas tienen 40 ingredientes y 30 recetas permitidos. Las reglas nuevas se publicaron el 2026-10-06. Se mantiene propietario/cuenta activa, marca de eliminación y precondiciones de revisión.

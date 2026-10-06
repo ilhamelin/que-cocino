@@ -9,7 +9,17 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "developmentClient": false,
+      "distribution": "internal",
+      "environment": "preview",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_CHAT_URL": "https://que-cocino-chat.benjaigancioreyes56.workers.dev/chat"
+      },
+      "credentialsSource": "remote"
     },
     "production": {
       "autoIncrement": true

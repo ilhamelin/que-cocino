@@ -4,7 +4,7 @@
 
 Implementada separación local de invitado y cada UID, copia explícita desde Perfil y eliminación de cuenta con confirmación y reautenticación de la misma identidad. Los registros activos son sobres versión 2; `kitchen-v1` queda intacto como respaldo, no se atribuye automáticamente a la cuenta iniciada. El plan previo y las ventanas de recuperación están en `MIGRACION.md`. Apariencia y apodo siguen por dispositivo.
 
-Cliente Firestore REST implementado usando el token Firebase del SDK nativo existente, sin biblioteca nativa nueva. `firestoreReady: false` mantiene desactivado el respaldo hasta crear la base y publicar reglas. Instrucciones en `FIRESTORE.md`. No se ha creado una base ni desplegado reglas desde el agente. No es un listener en tiempo real ni una integración remota ya validada.
+Cliente Firestore REST implementado usando el token Firebase del SDK nativo existente, sin biblioteca nativa nueva. `firestoreReady: true` después de que la persona creó la base y publicó reglas. Instrucciones en `FIRESTORE.md`. Primera copia, actualizaciones, envío manual de cambios sin conexión y separación de cuentas confirmados por la persona. No es un listener en tiempo real; recuperación y conflictos entre dispositivos siguen pendientes.
 
 Una instantánea pendiente local y el `updateTime` de Firestore permiten escrituras con precondiciones. Ante cambios distintos en ambos dispositivos se comparan contenidos y se pide confirmar cuál copia completa conservar. Se validan formatos antes de sustituir datos. Una escritura remota exitosa con respuesta perdida se reconoce comparando el estado, sin duplicar operaciones. Los errores detienen el reintento automático hasta una acción manual o retorno a primer plano; no hay sondeo continuo.
 
@@ -24,7 +24,7 @@ SQLite conserva `kitchen-v1` como respaldo y usa los sobres `kitchen-v2:guest` y
 
 El login utiliza Firebase Auth nativo y `react-native-nitro-google-signin` con Credential Manager en Android, sin licencia de pago. Está integrado con módulos cargados únicamente en Android fuera de Expo Go. Google detecta el cliente web desde la configuración nativa; el ID token se intercambia con Firebase y no se almacena en nuestros adaptadores SQLite. Firebase gestiona la persistencia de su sesión. El perfil presenta identidad, espera, cancelación, reintento y cierre de sesión. La cancelación no genera una sesión falsa ni un error alarmante. Expo Go, web y iOS sin configurar mantienen el modo local sin cargar estas bibliotecas en tiempo de ejecución.
 
-Esta entrega separa las cocinas por UID y ofrece importación explícita y eliminación con reautenticación. Solo `preferences-v1` sigue por dispositivo. La sincronización está implementada y desactivada hasta configurar Firestore; el chatbot sigue pendiente. Ayuda contiene respuestas fijas y el apodo local no es una identidad autenticada. Antes de distribuir se deben validar los nuevos recorridos físicos y las reglas remotas.
+Esta entrega separa las cocinas por UID y ofrece importación explícita y eliminación con reautenticación. Solo `preferences-v1` sigue por dispositivo. La sincronización está activa y la persona confirmó eliminación de identidad y cocina remota. El chatbot Gemini tiene pantalla y servidor preparados, sin despliegue ni credenciales: detalles en `CHATBOT.md`. Ayuda conserva respuestas fijas y enlaza al asistente; el apodo local no es una identidad autenticada. Antes de distribuir faltan controles de reglas y recorridos pendientes.
 
 ## Firebase frente a SQLite
 
@@ -68,6 +68,8 @@ Android ya tiene paquete, OAuth, certificado y compilación EAS: la persona conf
 
 ## Chatbot de cocina y de la app
 
+Implementación preparada el 5 de octubre de 2026: Gemini REST en Cloud Functions HTTP con Admin SDK, autenticación y revocación, comprobación de marca de eliminación, cupos atómicos y deduplicación. App Check requerido por defecto; piloto privado sin App Check solo para UID explícitamente permitidos. La app aún no obtiene token App Check, por lo que la distribución pública queda pendiente. Clave y modelo no configurados, `CHAT_ENABLED=false` por defecto, URL móvil vacía. No se han realizado llamadas reales a Gemini ni activado facturación. Límites, privacidad, configuración y verificaciones en `CHATBOT.md`. Las propuestas siguientes describen el diseño y requisitos; el límite global implementado es de intentos, no un presupuesto monetario.
+
 Flujo propuesto: app autenticada → función del servidor → control de cupos → proveedor del modelo → respuesta a la app. La clave del modelo se guarda en secretos del servidor. Las [funciones callable de Firebase](https://firebase.google.com/docs/functions/callable) permiten recibir identidad autenticada; el servidor debe exigirla y validarla.
 
 El asistente debe usar la guía de uso y el catálogo vigente para explicar funciones y recetas; no inventar ingredientes disponibles ni afirmar que cambió compras o despensa. En una primera entrega será de consulta, sin herramientas que modifiquen datos. El envío del contexto de despensa debe ser opcional y visible. No dar recomendaciones médicas sobre alergias o dietas; las restricciones deben manejarse con datos comprobados.
@@ -102,3 +104,9 @@ La pantalla de chat debe mostrar mensajes enviados y respuestas, estado de esper
 ## Otras mejoras a considerar
 
 Porciones ajustables, recetas propias, restricciones alimentarias verificadas, exportación de respaldo y menú semanal. Son propuestas para priorizar después de la base de cuentas; no se añaden a esta entrega.
+# Backend de chat vigente: Cloudflare Workers Free
+
+`worker/` reemplaza el despliegue propuesto de Functions, conservado como referencia local. Firebase Auth/Firestore siguen alojando identidad y cocina; Gemini es un secreto de Cloudflare. El Worker valida JWT con `jose`, consulta Auth REST/Firestore para usuario revocado o eliminado y restringe un piloto por UID. Un Durable Object SQLite global reserva cupos mediante transacciones síncronas y retiene metadatos seudónimos hasta 48 horas con limpieza por alarma. No almacena conversación ni modifica la cocina. Configuración y publicación: CLOUDFLARE.md. `firebase.json` no incluye Functions para evitar activarlas por accidente.
+
+
+Actualización 2026-10-06: Kitchen v3 migra v1/v2 sin perder listas, cantidades ni recetas. Añade ingredientes personalizados, plan semanal e historial con notas; Deshacer es solo memoria por sesión. Catálogo local: 40 ingredientes y 30 recetas. Sin API de recetas ni nuevas bibliotecas nativas. Detalles y límites en MEJORAS.md.

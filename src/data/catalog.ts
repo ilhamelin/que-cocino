@@ -1,3 +1,4 @@
+import { extraIngredients, extraRecipes } from './expandedCatalog';
 export const ingredients = [
   { id: 'huevos', name: 'Huevos', emoji: '🥚' },
   { id: 'arroz', name: 'Arroz', emoji: '🍚' },
@@ -11,6 +12,15 @@ export const ingredients = [
   { id: 'lentejas', name: 'Lentejas cocidas', emoji: '🫘' },
   { id: 'pan', name: 'Pan', emoji: '🍞' },
   { id: 'palta', name: 'Palta', emoji: '🥑' },
+  { id: 'pollo', name: 'Pollo', emoji: '🍗' },
+  { id: 'atun', name: 'Atún en conserva', emoji: '🐟' },
+  { id: 'leche', name: 'Leche', emoji: '🥛' },
+  { id: 'avena', name: 'Avena', emoji: '🌾' },
+  { id: 'ajo', name: 'Ajo', emoji: '🧄' },
+  { id: 'limon', name: 'Limón', emoji: '🍋' },
+  { id: 'garbanzos', name: 'Garbanzos cocidos', emoji: '🫘' },
+  { id: 'champiñones', name: 'Champiñones', emoji: '🍄' },
+  ...extraIngredients,
 ] as const;
 
 export type IngredientId = (typeof ingredients)[number]['id'];
@@ -27,6 +37,19 @@ export type Recipe = {
 };
 
 export const recipes: Recipe[] = [
+  ...extraRecipes,
+  { id: 'avena-leche', name: 'Avena cremosa', emoji: '🥣', minutes: 10, servings: 2, vegetarian: true,
+    ingredients: [{ id: 'avena', amount: '1 taza de avena' }, { id: 'leche', amount: '2 tazas de leche' }], basics: 'Agua si hace falta; canela opcional.',
+    steps: ['Pon la avena y la leche en una olla.', 'Calienta a fuego bajo, revolviendo durante 5 a 8 minutos hasta espesar.', 'Ajusta la consistencia con agua o leche y sirve cuando se haya enfriado lo suficiente.'] },
+  { id: 'ensalada-garbanzos', name: 'Ensalada de garbanzos y palta', emoji: '🥗', minutes: 10, servings: 2, vegetarian: true,
+    ingredients: [{ id: 'garbanzos', amount: '2 tazas de garbanzos cocidos' }, { id: 'palta', amount: '1 palta' }, { id: 'tomate', amount: '2 tomates' }, { id: 'limon', amount: '½ limón' }], basics: 'Aceite y sal.',
+    steps: ['Escurre los garbanzos ya cocidos; no uses garbanzos crudos.', 'Lava los tomates y córtalos junto con la palta.', 'Mezcla con los garbanzos, limón, aceite y sal.'] },
+  { id: 'pasta-atun', name: 'Pasta con atún y tomate', emoji: '🍝', minutes: 20, servings: 2, vegetarian: false,
+    ingredients: [{ id: 'pasta', amount: '180 g de pasta' }, { id: 'atun', amount: '1 lata de atún escurrido' }, { id: 'tomate', amount: '2 tomates' }, { id: 'ajo', amount: '1 diente de ajo' }], basics: 'Aceite, agua y sal.',
+    steps: ['Cocina la pasta según el envase.', 'Lava y pica los tomates. Cocina el ajo picado con aceite y agrega el tomate hasta formar una salsa.', 'Añade el atún escurrido, calienta y mezcla con la pasta cocida.'] },
+  { id: 'champiñones-huevo', name: 'Revuelto de champiñones', emoji: '🍳', minutes: 15, servings: 2, vegetarian: true,
+    ingredients: [{ id: 'champiñones', amount: '200 g de champiñones' }, { id: 'huevos', amount: '4 huevos' }, { id: 'ajo', amount: '1 diente de ajo' }], basics: 'Aceite y sal.',
+    steps: ['Limpia los champiñones y córtalos en láminas.', 'Saltéalos con el ajo picado y aceite hasta que estén cocidos.', 'Agrega los huevos batidos y revuelve a fuego bajo hasta que estén completamente cuajados.'] },
   { id: 'tortilla-espinaca', name: 'Tortilla de espinaca', emoji: '🍳', minutes: 15, servings: 2, vegetarian: true,
     ingredients: [{ id: 'huevos', amount: '4 huevos' }, { id: 'espinaca', amount: '2 tazas de espinaca' }, { id: 'queso', amount: '40 g de queso' }], basics: 'Aceite, sal y pimienta al gusto.',
     steps: ['Lava y corta la espinaca. Saltéala con un poco de aceite hasta que se ablande.', 'Bate los huevos y mezcla con la espinaca y el queso rallado.', 'Vierte en una sartén a fuego medio-bajo. Cocina por ambos lados hasta que el huevo esté completamente cuajado.'] },

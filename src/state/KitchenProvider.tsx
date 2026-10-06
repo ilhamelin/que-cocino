@@ -1,6 +1,7 @@
 import { AppText as Text } from '../ui/AppText';
 import { createContext, useContext, useEffect, useRef, useState, type Dispatch, type ReactNode } from 'react';
 import { ActivityIndicator, AppState, View } from 'react-native';
+import { KitchenUndo } from '../domain/undo';
 import { kitchenReducer, type KitchenAction, type KitchenState } from '../domain/kitchen';
 import { decideSync, hasKitchenData, importKitchen, newWorkspace, sameKitchen, type CloudSnapshot, type Workspace } from '../domain/workspace';
 import { workspaces } from '../storage/workspaces';
@@ -8,8 +9,9 @@ import { cloud, cloudErrorMessage } from '../services/cloud';
 import { firestoreReady } from '../config/firebase';
 import { useAuth } from './AuthProvider';
 import { Action, usePalette } from '../ui/common';
-
 type KitchenContextValue = {
+  canUndo: boolean; undo: () => void;
+  chatDraft: string; setChatDraft: (value: string) => void;
   state: KitchenState; dispatch: Dispatch<KitchenAction>; saveError: boolean; retrySave: () => void;
   guestAvailable: boolean; importDecision: Workspace['importDecision']; importGuest: () => void; skipImport: () => void;
   syncEnabled: boolean; syncing: boolean; syncError: string | null; lastSyncedAt: string | null; pendingSync: boolean;
@@ -17,16 +19,17 @@ type KitchenContextValue = {
   resolveConflict: (choice: 'local' | 'remote') => void;
 };
 const KitchenContext = createContext<KitchenContextValue | null>(null);
-
 export function KitchenProvider({ children }: { children: ReactNode }) {
   const auth = useAuth();
   const colors = usePalette();
   if (auth.loading) return <View style={{ flex: 1, justifyContent: 'center', backgroundColor: colors.background }}><ActivityIndicator color={colors.green} accessibilityLabel="Comprobando sesión" /></View>;
   return <KitchenSession key={auth.account?.uid ?? 'guest'} uid={auth.account?.uid ?? null}>{children}</KitchenSession>;
 }
-
 function KitchenSession({ uid, children }: { uid: string | null; children: ReactNode }) {
   const auth = useAuth();
+  const [chatDraft, setChatDraft] = useState('');
+  const [undoHistory] = useState(() => new KitchenUndo());
+  const [undoCount, setUndoCount] = useState(0);
   const [workspace, setWorkspace] = useState<Workspace>(newWorkspace);
   const current = useRef(workspace);
   const [ready, setReady] = useState(false);
@@ -44,7 +47,6 @@ function KitchenSession({ uid, children }: { uid: string | null; children: React
   const busy = useRef(auth.busy);
   busy.current = auth.busy;
   const colors = usePalette();
-
   function persist(value: Workspace): Promise<void> {
     current.current = value;
     setWorkspace(value);
@@ -59,7 +61,6 @@ function KitchenSession({ uid, children }: { uid: string | null; children: React
     if (sameKitchen(state, current.current.kitchen)) return;
     void persist({ ...current.current, kitchen: state, sync: { ...current.current.sync, dirty: uid !== null } }).catch(() => {});
   }
-
   useEffect(() => {
     alive.current = true;
     let active = true;
@@ -73,12 +74,10 @@ function KitchenSession({ uid, children }: { uid: string | null; children: React
     })().catch(() => { if (active) setLoadError(true); });
     return () => { active = false; alive.current = false; };
   }, [uid, attempt]);
-
   useEffect(() => auth.registerBeforeChange(async () => {
     await syncTask.current;
     await saves.current;
   }), [auth.registerBeforeChange]);
-
   async function performSync(choice?: 'local' | 'remote') {
     if (!uid || !firestoreReady || !ready || busy.current || !current.current.sync.enabled) return;
     initialSyncDone.current = true;
@@ -101,6 +100,7 @@ function KitchenSession({ uid, children }: { uid: string | null; children: React
       const latest = current.current;
       const unchanged = latest === local;
       const useRemote = unchanged && (decision === 'download' || (decision === 'conflict' && choice === 'remote'));
+      if (useRemote) { undoHistory.clear(); setUndoCount(0); }
       if (acknowledged !== null || decision === 'none' || choice === 'remote') {
         await persist({ ...latest,
           kitchen: useRemote ? (acknowledged?.kitchen ?? newWorkspace().kitchen) : latest.kitchen,
@@ -127,22 +127,33 @@ function KitchenSession({ uid, children }: { uid: string | null; children: React
     const subscription = AppState.addEventListener('change', value => { if (value === 'active') startSync(); });
     return () => subscription.remove();
   }, [ready, uid]);
-
   async function copyGuest() {
     if (!uid || !ready || auth.busy || syncing) return;
     try {
       const guest = await workspaces.load(null);
       if (!alive.current) return;
+      undoHistory.clear(); setUndoCount(0);
       await persist({ ...current.current, kitchen: importKitchen(current.current.kitchen, guest.kitchen), importDecision: 'copied',
         sync: { ...current.current.sync, dirty: true } });
     } catch { if (alive.current) setSaveError(true); }
   }
-
   if (!ready) return <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', padding: 28, gap: 18 }}>
     {loadError ? <><Text style={{ color: colors.text, fontSize: 18 }}>No pudimos abrir esta cocina. Tus datos no se han reemplazado.</Text><Action label="Reintentar" onPress={() => setAttempt(value => value + 1)} />{uid ? <Action label="Volver al modo invitado" onPress={auth.signOut} disabled={auth.busy} secondary /> : null}</> : <ActivityIndicator color={colors.green} accessibilityLabel="Cargando tu cocina" />}
   </View>;
-  return <KitchenContext.Provider value={{ state: workspace.kitchen,
-    dispatch: action => { if (!busy.current) changeKitchen(kitchenReducer(current.current.kitchen, action)); },
+  return <KitchenContext.Provider value={{ state: workspace.kitchen, chatDraft, setChatDraft,
+    dispatch: action => {
+      if (busy.current) return;
+      const next = kitchenReducer(current.current.kitchen, action);
+      if (sameKitchen(next, current.current.kitchen)) return;
+      undoHistory.capture(current.current.kitchen); setUndoCount(undoHistory.size);
+      changeKitchen(next);
+    },
+    canUndo: undoCount > 0 && !auth.busy && !syncing && !conflict,
+    undo: () => {
+      if (busy.current || syncTask.current || conflict) return;
+      const previous = undoHistory.take(); setUndoCount(undoHistory.size);
+      if (previous) changeKitchen(previous);
+    },
     saveError, retrySave: () => { void persist(current.current).catch(() => {}); },
     guestAvailable, importDecision: workspace.importDecision,
     importGuest: () => { void copyGuest(); },

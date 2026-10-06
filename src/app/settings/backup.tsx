@@ -8,6 +8,7 @@ import { Confirmation } from '../../ui/Confirmation';
 import { SettingsPage } from '../../ui/settings';
 import { router } from 'expo-router';
 import { ingredients, recipes } from '../../data/catalog';
+import { recipeOptions } from '../../domain/planning';
 import type { KitchenState } from '../../domain/kitchen';
 
 export default function BackupScreen() {
@@ -19,7 +20,7 @@ export default function BackupScreen() {
   const summary = (pantry = 0, favorites = 0, shopping = 0) => `${pantry} ingredientes, ${favorites} favoritas y ${shopping} compras`;
   const describe = (state: KitchenState | undefined) => {
     const names = (ids: readonly string[]) => ids.map(id => ingredients.find(item => item.id === id)?.name ?? id).join(', ') || 'Vacía';
-    return `Despensa: ${names(state?.pantry ?? [])}. Favoritas: ${(state?.favorites ?? []).map(id => recipes.find(item => item.id === id)?.name ?? id).join(', ') || 'Ninguna'}. Compras: ${names(state?.shopping ?? [])}. Marcadas: ${names(state?.checked ?? [])}.`;
+    return `Despensa: ${names(state?.pantry ?? [])}. Favoritas: ${(state?.favorites ?? []).map(id => recipes.find(item => item.id === id)?.name ?? id).join(', ') || 'Ninguna'}. Recetas propias: ${state?.savedRecipes.map(r => r.name).join(', ') || 'Ninguna'}. Cantidades: ${Object.entries(state?.quantities ?? {}).map(([id, q]) => `${names([id])}: ${q.amount} ${q.unit}`).join(', ') || 'Sin indicar'}. Personalizados: ${state?.customIngredients.map(r => r.name).join(', ') || 'Ninguno'}. Plan: ${state?.mealPlan.map(r => `${r.date}: ${state ? recipeOptions(state).find(item => item.id === r.recipeId)?.name ?? 'Receta no disponible' : ''} (${r.servings} porciones)`).join('; ') || 'Vacío'}. Historial: ${state?.cookHistory.length ?? 0} preparaciones; últimas: ${state?.cookHistory.slice(0, 3).map(r => `${r.name} (${new Date(r.cookedAt).toLocaleDateString('es-CL')})`).join(', ') || 'Ninguna'}. Compras: ${names(state?.shopping ?? [])}. Marcadas: ${names(state?.checked ?? [])}.`;
   };
   function confirm() {
     const choice = confirmation; setConfirmation(null);
@@ -44,7 +45,7 @@ export default function BackupScreen() {
         <Action label="Conservar la de este dispositivo" disabled={kitchen.syncing || auth.busy} onPress={() => setConfirmation('local')} />
         <Action label="Conservar la de la nube" disabled={kitchen.syncing || auth.busy} onPress={() => setConfirmation('remote')} secondary />
       </Section> : null}
-      <Notice>El respaldo incluye despensa, favoritas, compras y casillas marcadas. No incluye el apodo ni los ajustes de apariencia. Puedes trabajar sin conexión: los cambios quedan pendientes en SQLite. Sincronizamos al volver a la app, después de cambios o al pulsar el botón; no es una actualización en tiempo real.</Notice>
+      <Notice>El respaldo incluye despensa, cantidades, ingredientes personalizados, recetas propias, plan semanal, historial con notas, favoritas, compras y casillas marcadas. No incluye el apodo ni los ajustes de apariencia. Puedes trabajar sin conexión: los cambios quedan pendientes en SQLite. Sincronizamos al volver a la app, después de cambios o al pulsar el botón; no es una actualización en tiempo real.</Notice>
       <Notice>Pausar conserva la copia existente. Eliminar tu cuenta desde Seguridad elimina su cocina remota y local.</Notice>
     </>}
     <Confirmation visible={confirmation !== null} title={confirmation === 'enable' ? '¿Activar respaldo?' : '¿Conservar esta versión?'} message={confirmation === 'enable' ? 'La cocina de esta cuenta se enviará a Firestore para recuperarla en otro dispositivo. Si ya hay otra copia y hay diferencias, te pediremos elegir. Los datos del invitado no se envían.' : confirmation === 'local' ? 'La cocina de este dispositivo reemplazará la copia de la nube. Los datos que estén solo en la nube se perderán.' : 'La copia de la nube reemplazará la cocina de este dispositivo. Los cambios que existan solo aquí se perderán.'} confirmLabel={confirmation === 'enable' ? 'Sí, activar respaldo' : 'Sí, conservar esta versión'} onConfirm={confirm} onCancel={() => setConfirmation(null)} />

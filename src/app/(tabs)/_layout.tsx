@@ -15,6 +15,6 @@ export default function TabLayout() {
     <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: tabIcon('home-outline') }} />
     <Tabs.Screen name="pantry" options={{ title: 'Despensa', tabBarIcon: tabIcon('leaf-outline') }} />
     <Tabs.Screen name="favorites" options={{ title: 'Favoritas', tabBarIcon: tabIcon('heart-outline') }} />
-    <Tabs.Screen name="shopping" options={{ title: 'Compras', tabBarIcon: tabIcon('basket-outline'), tabBarBadge: state.shopping.length || undefined, tabBarBadgeStyle: { backgroundColor: c.green, color: c.onGreen } }} />
+    <Tabs.Screen name="shopping" options={{ title: 'Compras', tabBarIcon: tabIcon('basket-outline'), tabBarBadge: (state.shopping.length + state.customIngredients.filter(r => r.shopping).length) || undefined, tabBarBadgeStyle: { backgroundColor: c.green, color: c.onGreen } }} />
   </Tabs>;
 }

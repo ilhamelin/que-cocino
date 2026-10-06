@@ -11,3 +11,9 @@ Plan previo a cambiar la persistencia, 5 de octubre de 2026.
 - La API REST de Firestore usa el token Firebase del SDK ya instalado y reglas por UID. No se añade una biblioteca nativa ni se necesita recompilar el APK para esta entrega. No hay listener en tiempo real: sincroniza al activar, al volver al primer plano, después de cambios con espera y mediante botón; los errores tienen reintento.
 - El borrado remoto escribe de forma atómica una marca irreversible `users/<UID> {deleted: true}` y elimina `kitchens/current`. Las reglas bloquean lecturas y escrituras de cocina de sesiones antiguas. Solo queda ese identificador técnico; no contiene correo, nombre ni cocina. Las marcas locales también impiden escrituras tardías. No se promete invalidación inmediata de un APK antiguo que no tenga estos controles.
 - No se considera validada la migración móvil, borrado ni sincronización hasta probarlos en dispositivos. Las reglas y la base remota deben configurarse antes de activar el respaldo.
+
+
+Actualización del 5 de octubre: cantidades y recetas propias usan Kitchen v2, compatible con lectura v1. Reglas compiladas/publicadas; ver MEJORAS.md para migración, límites, TheMealDB, temporizador y comprobaciones. Las 31 pruebas app, 4 Worker y exportación all pasaron; las nuevas interacciones físicas siguen pendientes.
+
+
+Actualización 2026-10-06: Kitchen v3 migra v1/v2 sin perder listas, cantidades ni recetas. Añade ingredientes personalizados, plan semanal e historial con notas; Deshacer es solo memoria por sesión. Catálogo local: 40 ingredientes y 30 recetas. Sin API de recetas ni nuevas bibliotecas nativas. Detalles y límites en MEJORAS.md.

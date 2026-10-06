@@ -17,7 +17,7 @@ export function cloudErrorMessage(error: unknown): string {
 }
 export function encodeCloud(kitchen: KitchenState): { fields: Record<string, FirestoreValue> } {
   const value = decodeState(JSON.stringify(kitchen));
-  return { fields: { version: { integerValue: '1' }, ...Object.fromEntries(
+  return { fields: { version: { integerValue: '3' }, extras: { stringValue: JSON.stringify({ customIngredients: value.customIngredients, mealPlan: value.mealPlan, cookHistory: value.cookHistory }) }, quantities: { stringValue: JSON.stringify(value.quantities) }, savedRecipes: { stringValue: JSON.stringify(value.savedRecipes) }, ...Object.fromEntries(
     (['pantry', 'favorites', 'shopping', 'checked'] as const).map(key => [key, { arrayValue: { values: value[key].map(id => ({ stringValue: id })) } }]),
   ) } };
 }
@@ -26,8 +26,11 @@ export function decodeCloud(document: unknown): Exclude<CloudSnapshot, null> {
   try {
     if (!data.fields || typeof data.updateTime !== 'string' || Number.isNaN(Date.parse(data.updateTime))) throw new Error();
     const fields = data.fields;
-    if (fields.version?.integerValue !== '1') throw new Error();
-    const state = { version: 1, ...Object.fromEntries((['pantry', 'favorites', 'shopping', 'checked'] as const).map(key => {
+    if (!['1', '2', '3'].includes(fields.version?.integerValue ?? '')) throw new Error();
+    const version = Number(fields.version.integerValue);
+    const extras = version === 3 ? JSON.parse(fields.extras.stringValue!) : {};
+    if (!extras || typeof extras !== 'object' || Array.isArray(extras) || Object.keys(extras).some(key => !['customIngredients', 'mealPlan', 'cookHistory'].includes(key))) throw new Error();
+    const state = { ...extras, version, ...(version >= 2 ? { quantities: JSON.parse(fields.quantities.stringValue!), savedRecipes: JSON.parse(fields.savedRecipes.stringValue!) } : {}), ...Object.fromEntries((['pantry', 'favorites', 'shopping', 'checked'] as const).map(key => {
       if (!fields[key]?.arrayValue) throw new Error();
       return [key, (fields[key].arrayValue.values ?? []).map(value => value.stringValue)];
     })) };

@@ -31,9 +31,48 @@ yarn-error.*
 *.pem
 
 # local env files
-.env*.local
+.env*
+!.env.example
+!.env.*.example
+functions/.env*
+functions/.secret*
+functions/lib/
+worker/.dev.vars*
+worker/.wrangler/
+worker/build/
+
+# Local deployment configuration (pilot account IDs)
+/worker/wrangler.jsonc
+/worker/wrangler.json
+/worker/wrangler.toml
+
+# Credentials and private keys
+*.keystore
+*.pfx
+credentials.json
+*service-account*.json
+*serviceAccount*.json
+*firebase-adminsdk*.json
+/application_default_credentials.json
+.aws/
+.ssh/
+
+# Local databases, diagnostics and build artifacts
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.log
+*.apk
+*.aab
+*.ipa
+*.hprof
+/private/
 
 # typescript
+.firebase/
 *.tsbuildinfo
 
 # generated native folders

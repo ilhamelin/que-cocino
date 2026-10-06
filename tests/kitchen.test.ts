@@ -2,7 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ingredients, recipes } from '../src/data/catalog';
 import { decodeState, initialState, kitchenReducer, missingIngredients, rankRecipes } from '../src/domain/kitchen';
-
 test('fully matched recipes rank ahead of incomplete recipes, then by preparation time', () => {
   const pantry = ['pan', 'tomate', 'queso'] as const;
   const ranked = rankRecipes([...pantry]);
@@ -13,7 +12,7 @@ test('fully matched recipes rank ahead of incomplete recipes, then by preparatio
 });
 test('quick filter excludes recipes over 15 minutes without mutating the catalog', () => {
   assert.ok(rankRecipes([], true).every(recipe => recipe.minutes <= 15));
-  assert.equal(recipes.length, 8);
+  assert.equal(recipes.length, 30);
 });
 test('shopping additions are deduplicated and purchase moves only checked ingredients', () => {
   let state = kitchenReducer(initialState, { type: 'add-shopping', ids: ['queso', 'pan'] });
@@ -46,7 +45,7 @@ test('persistence round-trips state and rejects corrupt or incompatible data', (
   assert.deepEqual(decodeState(JSON.stringify(state)), state);
   assert.deepEqual(decodeState(null), initialState);
   assert.throws(() => decodeState('{broken'));
-  assert.throws(() => decodeState(JSON.stringify({ ...state, version: 2 })));
+  assert.throws(() => decodeState(JSON.stringify({ ...state, version: 99 })));
   assert.throws(() => decodeState(JSON.stringify({ ...state, pantry: ['unknown'] })));
   assert.throws(() => decodeState(JSON.stringify({ ...state, favorites: [42] })));
   assert.deepEqual(decodeState(JSON.stringify({ ...state, checked: ['queso'] })).checked, []);

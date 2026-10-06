@@ -31,9 +31,9 @@ export const authAdapter: AuthAdapter = {
     if (reason) throw new Error(reason);
     const { firebase, google, auth } = nativeAuth();
     await google.GoogleOneTapSignIn.checkPlayServices();
-    let response = await google.GoogleOneTapSignIn.signIn();
-    if (google.isNoSavedCredentialFoundResponse(response)) response = await google.GoogleOneTapSignIn.createAccount();
-    if (google.isNoSavedCredentialFoundResponse(response)) response = await google.GoogleOneTapSignIn.presentExplicitSignIn();
+    // A deliberate button press must allow choosing another account.
+    // signIn() filters to previously authorized accounts on Android.
+    const response = await google.GoogleOneTapSignIn.presentExplicitSignIn();
     if (response.type === 'cancelled') return;
     if (!google.isSuccessResponse(response)) throw new Error('Google no encontró una cuenta disponible.');
     const token = response.data.idToken;

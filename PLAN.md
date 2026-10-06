@@ -72,10 +72,11 @@ Las pruebas de interfaz con React Native Testing Library y un recorrido automát
 
 - Implementados ajustes desde el botón de engranaje: perfil local, seguridad y privacidad, apariencia, ayuda e información de la app.
 - Tema del dispositivo, claro u oscuro; tamaños estándar, grande y más grande; fuente del dispositivo o clásica. Preferencias persistidas en un registro independiente `preferences-v1`, sin cambiar `kitchen-v1`.
-- Identificador Android `com.quecocino.app`; Expo vinculado a `@ilhamelin/que-cocino`. Compilación EAS y recorrido básico de sesión confirmados en el POCO. Separación de cocinas, migración sin pérdidas, importación explícita y eliminación con reautenticación implementadas; falta probarlas en el POCO. Plan de migración en `MIGRACION.md`.
-- Respaldo/sincronización por Firestore REST preparado, sin dependencias nativas nuevas. Desactivado hasta crear la base y publicar reglas (`FIRESTORE.md`). Después: pruebas de dos cuentas/dispositivos, errores, conexión interrumpida, conflictos y borrado. Configuración iOS pendiente. Chatbot conserva su etapa de servidor posterior.
-- Chatbot solicitado: dudas de cocina y de la app. Requiere un servidor con autenticación, cupos atómicos por usuario y presupuesto global antes de conectar un modelo. No hay IA ni sesiones simuladas en la versión local.
+- Identificador Android `com.quecocino.app`; Expo vinculado a `@ilhamelin/que-cocino`. Compilación EAS y recorrido básico de sesión confirmados en el POCO. Separación invitado/cuenta confirmada sin mezcla de datos. La persona confirmó eliminación con retorno al invitado, retirada de Authentication y borrado de cocina remota. Importación y controles negativos de eliminación pendientes. Plan de migración en `MIGRACION.md`.
+- Respaldo/sincronización por Firestore REST activo, sin dependencias nativas nuevas. Base y reglas publicadas; primera copia, actualización de despensa, envío manual de cambios guardados sin conexión y separación entre dos cuentas de Google confirmados por la persona. Recuperación y conflictos pendientes de otro dispositivo o emulador. Configuración iOS pendiente. Siguiente desarrollo: preparar chatbot y servidor de cupos; elegir proveedor y presupuesto antes de activar servicios facturables.
+- Chatbot Gemini preparado: pantalla con consentimiento y despensa opcional; servidor HTTP con sesión Firebase, cupos atómicos por UID/globales, deduplicación y límite de respuesta. Sin clave, modelo, URL ni despliegue, por lo que aún no ofrece respuestas reales. Siguiente paso: crear clave en AI Studio, elegir modelo y presupuesto, configurar un piloto privado y probar servicio/concurrencia real. App Check móvil y distribución pública pendientes. Instrucciones en `CHATBOT.md`.
 - Diseño, requisitos, límites propuestos y criterios de aceptación en `ARQUITECTURA.md`.
+- Restricción vigente del chatbot: sin facturación y sin guardar clave Gemini en Firebase. Secret Manager exigió Blaze y el comando se detuvo. Alternativa investigada: Gemini Free Tier y Cloudflare Workers Free con secreto cifrado y Durable Objects SQLite para cupos. Backend actual de `functions/` requiere adaptación; no hay despliegue ni cuenta Cloudflare configurada. Opción local en PC también viable. No seguir el despliegue Firebase previo; decisión y fuentes en `CHATBOT.md`.
 
 ## Posibles ampliaciones a validar
 
@@ -84,3 +85,14 @@ Menú semanal, despensa compartida y reconocimiento de ingredientes mediante fot
 ## Publicación
 
 Definir marca, identificador iOS, política de privacidad según las funciones reales y cuentas de tiendas. EAS ya está vinculado y Android tiene certificado de desarrollo. Generar una versión de prueba interna antes de publicar. No hay publicación en tiendas.
+# Actualización: Worker gratuito preparado (5 de octubre de 2026)
+
+Actualización posterior: Worker publicado y URL pública conectada. Se corrigió la incompatibilidad `redirect: error` del runtime con una prueba de regresión Miniflare; 4 pruebas Worker y 28 app pasan. Gemini 2.5 rechazó el proyecto nuevo con 404; se publicó Gemini 3.5 Flash-Lite manteniendo Nivel gratuito. La persona confirmó una respuesta real en su Android a «¿Cómo cocino arroz?» a las 18:24. Próximas comprobaciones opcionales: contexto de despensa, conversación posterior y limpieza del historial al cambiar cuenta. No se recompiló el APK.
+
+Cloudflare `que-cocino-chat` creado por la persona; secreto Gemini guardado según su confirmación y AI Studio en Nivel gratuito. Backend adaptado en `worker/` con JWT Firebase, comprobación online del usuario/marcador y cuotas SQLite atómicas. UID de prueba autorizado. Compilación simulada y 3 pruebas del Worker pasan; 27 pruebas de la app pasan. No se ha publicado este código ni probado una respuesta real. Próximo paso: login Wrangler, publicar al Worker existente, conectar URL pública y probar en POCO. Mantener Free; sin Secret Manager ni Cloud Functions. Guía vigente: CLOUDFLARE.md.
+
+
+Actualización del 5 de octubre: cantidades y recetas propias usan Kitchen v2, compatible con lectura v1. Reglas compiladas/publicadas; ver MEJORAS.md para migración, límites, TheMealDB, temporizador y comprobaciones. Las 31 pruebas app, 4 Worker y exportación all pasaron; las nuevas interacciones físicas siguen pendientes.
+
+
+Actualización 2026-10-06: Kitchen v3 migra v1/v2 sin perder listas, cantidades ni recetas. Añade ingredientes personalizados, plan semanal e historial con notas; Deshacer es solo memoria por sesión. Catálogo local: 40 ingredientes y 30 recetas. Sin API de recetas ni nuevas bibliotecas nativas. Detalles y límites en MEJORAS.md.

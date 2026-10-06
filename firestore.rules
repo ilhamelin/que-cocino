@@ -7,15 +7,21 @@ service cloud.firestore {
         || get(/databases/$(database)/documents/users/$(uid)).data.deleted != true;
     }
     function validKitchen(data) {
-      let ingredientIds = ['huevos', 'arroz', 'tomate', 'espinaca', 'pasta', 'queso', 'papa', 'cebolla', 'lentejas', 'pan', 'palta', 'zanahoria'];
-      let recipeIds = ['arroz-tomate', 'pasta-tomate', 'tortilla-espinaca', 'ensalada-lentejas', 'papas-huevo', 'arroz-verduras', 'sandwich-queso', 'tostadas-palta'];
+      let ingredientIds = ['huevos', 'arroz', 'tomate', 'espinaca', 'pasta', 'queso', 'papa', 'cebolla', 'lentejas', 'pan', 'palta', 'zanahoria', 'pollo', 'atun', 'leche', 'avena', 'ajo', 'limon', 'garbanzos', 'champiñones', 'pimenton', 'pepino', 'zapallo-italiano', 'brocoli', 'coliflor', 'choclo', 'harina', 'yogur', 'manzana', 'platano', 'naranja', 'mantequilla', 'miel', 'porotos', 'lechuga', 'repollo', 'betarraga', 'quinoa', 'aceitunas', 'nueces'];
+      let recipeIds = ['arroz-tomate', 'pasta-tomate', 'tortilla-espinaca', 'ensalada-lentejas', 'papas-huevo', 'arroz-verduras', 'sandwich-queso', 'tostadas-palta', 'avena-leche', 'ensalada-garbanzos', 'pasta-atun', 'champiñones-huevo', 'ensalada-pepino', 'quinoa-verduras', 'crema-coliflor', 'brocoli-ajo', 'ensalada-porotos', 'tostadas-huevo', 'avena-manzana', 'yogur-fruta', 'panqueques-platano', 'ensalada-repollo', 'pasta-brocoli', 'zapallo-huevo', 'ensalada-betarraga', 'arroz-choclo', 'ensalada-quinoa', 'hummus-simple', 'ensalada-lechuga', 'papas-queso'];
       return data.keys().hasAll(['version', 'pantry', 'favorites', 'shopping', 'checked'])
-        && data.keys().hasOnly(['version', 'pantry', 'favorites', 'shopping', 'checked'])
-        && data.version == 1
-        && data.pantry is list && data.pantry.size() <= 12 && data.pantry.hasOnly(ingredientIds)
-        && data.favorites is list && data.favorites.size() <= 8 && data.favorites.hasOnly(recipeIds)
-        && data.shopping is list && data.shopping.size() <= 12 && data.shopping.hasOnly(ingredientIds)
-        && data.checked is list && data.checked.size() <= 12 && data.checked.hasOnly(data.shopping);
+        && ((data.version == 1 && data.keys().hasOnly(['version', 'pantry', 'favorites', 'shopping', 'checked']))
+          || (data.version == 2 && data.keys().hasOnly(['version', 'pantry', 'favorites', 'shopping', 'checked', 'quantities', 'savedRecipes'])
+            && data.quantities is string && data.quantities.size() <= 4000
+            && data.savedRecipes is string && data.savedRecipes.size() <= 180000)
+          || (data.version == 3 && data.keys().hasOnly(['version', 'pantry', 'favorites', 'shopping', 'checked', 'quantities', 'savedRecipes', 'extras'])
+            && data.quantities is string && data.quantities.size() <= 8000
+            && data.savedRecipes is string && data.savedRecipes.size() <= 180000
+            && data.extras is string && data.extras.size() <= 120000))
+        && data.pantry is list && data.pantry.size() <= 40 && data.pantry.hasOnly(ingredientIds)
+        && data.favorites is list && data.favorites.size() <= 30 && data.favorites.hasOnly(recipeIds)
+        && data.shopping is list && data.shopping.size() <= 40 && data.shopping.hasOnly(ingredientIds)
+        && data.checked is list && data.checked.size() <= 40 && data.checked.hasOnly(data.shopping);
     }
     // Minimal irreversible deletion marker. It contains no name, email or kitchen.
     match /users/{uid} {

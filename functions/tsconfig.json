@@ -1,0 +1,4 @@
+{
+  "compilerOptions": { "target": "ES2022", "module": "Node16", "moduleResolution": "Node16", "rootDir": "..", "outDir": "lib", "strict": true, "skipLibCheck": true, "types": ["node"] },
+  "include": ["src/**/*.ts", "../src/domain/chat.ts", "../src/data/catalog.ts"]
+}

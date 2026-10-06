@@ -25,6 +25,9 @@ export default function HomeScreen() {
       <Action label="Elegir mis ingredientes" onPress={() => router.push('/pantry')} />
       <Action secondary label="Probar con ingredientes de ejemplo" onPress={() => dispatch({ type: 'sample' })} />
     </Empty> : null}
+    <Action label="Organizar mi semana" secondary onPress={() => router.push('/plan')} />
+    <Action label="Ver lo que cociné" secondary onPress={() => router.push('/history')} />
+    <Action label="Explorar catálogo local" secondary onPress={() => router.push('/explore')} />
     <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
       {[false, true].map(value => <Pressable key={String(value)} accessibilityRole="button" accessibilityState={{ selected: quick === value }} onPress={() => setQuick(value)} style={({ pressed }) => ({ padding: 12, maxWidth: '100%', minHeight: 48, borderRadius: 13, backgroundColor: quick === value ? c.green : c.soft, opacity: pressed ? .7 : 1 })}><Text style={{ color: quick === value ? c.onGreen : c.green, fontSize: 13, flexShrink: 1 }}>{value ? 'Hasta 15 min' : 'Todas las ideas'}</Text></Pressable>)}
     </View>

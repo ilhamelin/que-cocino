@@ -1,0 +1,36 @@
+// Copy to wrangler.jsonc and configure your project locally.
+// GEMINI_API_KEY belongs in a Cloudflare Secret, never in this file.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "que-cocino-chat",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-05",
+  "workers_dev": true,
+  "vars": {
+    "CHAT_ENABLED": "false",
+    "GEMINI_MODEL": "gemini-3.5-flash-lite",
+    "CHAT_PILOT_UIDS": "",
+    "CHAT_GLOBAL_DAILY_LIMIT": "20",
+    "FIREBASE_PROJECT_ID": "YOUR_FIREBASE_PROJECT_ID",
+    "FIREBASE_API_KEY": "YOUR_PUBLIC_FIREBASE_CLIENT_API_KEY"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "CHAT_QUOTA",
+        "class_name": "ChatQuota"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "ChatQuota"
+      ]
+    }
+  ],
+  "observability": {
+    "enabled": false
+  }
+}

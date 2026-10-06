@@ -11,7 +11,7 @@ import { Action, Notice, usePalette, useResolvedTheme } from '../ui/common';
 
 function Navigation() {
   const c = usePalette();
-  const { saveError, retrySave, guestAvailable, importDecision } = useKitchen();
+  const { saveError, retrySave, guestAvailable, importDecision, canUndo, undo } = useKitchen();
   const { account } = useAuth();
   const settings = usePreferences();
   const theme = useResolvedTheme();
@@ -24,6 +24,7 @@ function Navigation() {
       <Stack.Screen name="recipe/[id]" />
       <Stack.Screen name="settings" />
     </Stack>
+    {canUndo ? <SafeAreaView edges={['bottom', 'left', 'right']} style={{ padding: 8 }}><Action label="Deshacer último cambio" secondary onPress={undo} /></SafeAreaView> : null}
     <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
   </View>;
 }
